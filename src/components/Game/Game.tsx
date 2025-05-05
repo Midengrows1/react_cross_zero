@@ -1,49 +1,32 @@
 import Field from "../Field/Field";
 import Information from "../Information/Information";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 export type GameLayoutProps = {
   fields: string[];
   isDraw: boolean;
   isGameEnded: boolean;
-  currentPlayer: string;
-  setCurrentPlayer: React.Dispatch<React.SetStateAction<string>>;
-  setFields: React.Dispatch<React.SetStateAction<string[]>>;
-  winPatterns: number[][];
-  setIsDraw: React.Dispatch<React.SetStateAction<boolean>>;
-  setIsGameEnded: React.Dispatch<React.SetStateAction<boolean>>;
+  showMark: (e: React.MouseEvent<HTMLButtonElement>, index: number) => void;
+  resetGame: () => void;
+  gameStatus: string;
 };
 const GameLayout: React.FC<GameLayoutProps> = ({
   fields,
   isDraw,
   isGameEnded,
-  currentPlayer,
-  setCurrentPlayer,
-  setFields,
-  winPatterns,
-  setIsDraw,
-  setIsGameEnded,
+  showMark,
+  resetGame,
+  gameStatus,
 }) => {
   return (
     <div className="w-full h-[600px] border-2  my-50 box-border p-5">
       <Information
         isDraw={isDraw}
         isGameEnded={isGameEnded}
-        currentPlayer={currentPlayer}
-        setIsDraw={setIsDraw}
-        setIsGameEnded={setIsGameEnded}
-        setCurrentPlayer={setCurrentPlayer}
-        setFields={setFields}
+        resetGame={resetGame}
+        gameStatus={gameStatus}
       />
       <div className="flex items-center justify-center w-full h-max">
-        <Field
-          fields={fields}
-          currentPlayer={currentPlayer}
-          setCurrentPlayer={setCurrentPlayer}
-          setFields={setFields}
-          winPatterns={winPatterns}
-          setIsDraw={setIsDraw}
-          setIsGameEnded={setIsGameEnded}
-        />
+        <Field fields={fields} showMark={showMark} />
       </div>
     </div>
   );
@@ -73,18 +56,59 @@ const Game = () => {
     [0, 4, 8],
     [2, 4, 6], // Варианты побед по диагонали
   ];
+  const showMark = (e: React.MouseEvent<HTMLButtonElement>, index: number) => {
+    e.currentTarget.innerText = currentPlayer;
+    setFields((prevFields) => {
+      prevFields[index] = currentPlayer;
+      return [...prevFields];
+    });
+    if (currentPlayer === "X") {
+      setCurrentPlayer("O");
+    } else {
+      setCurrentPlayer("X");
+    }
+    e.currentTarget.disabled = true;
+    e.currentTarget.classList.remove("hover:bg-gray-200");
+    e.currentTarget.classList.remove("active:scale-105");
+  };
+  useEffect(() => {
+    if (fields.length > 0) {
+      WIN_PATTERNS.forEach((pattern) => {
+        const [a, b, c] = pattern;
+        if (fields[a] && fields[a] === fields[b] && fields[a] === fields[c]) {
+          setCurrentPlayer(fields[a]);
+          setIsGameEnded(true);
+        } else if (!fields.includes("")) {
+          setIsDraw(true);
+        }
+      });
+    }
+  }, [fields]);
+
+  let gameStatus = "";
+  if (isDraw) {
+    gameStatus = "Ничья!";
+  } else if (isGameEnded && !isDraw) {
+    gameStatus = `Победа: ${currentPlayer}`;
+  } else if (!isDraw && !isGameEnded) {
+    gameStatus = `Ходит: ${currentPlayer}`;
+  }
+
+  const resetGame = () => {
+    setIsDraw(false);
+    setIsGameEnded(false);
+    setCurrentPlayer("X");
+    setFields(["", "", "", "", "", "", "", "", ""]);
+  };
   return (
     <div>
       <GameLayout
         fields={fields}
-        currentPlayer={currentPlayer}
         isGameEnded={isGameEnded}
         isDraw={isDraw}
-        setIsGameEnded={setIsGameEnded}
-        setIsDraw={setIsDraw}
-        setCurrentPlayer={setCurrentPlayer}
-        setFields={setFields}
-        winPatterns={WIN_PATTERNS}
+        showMark={showMark}
+        resetGame={resetGame}
+        gameStatus={gameStatus}
       />
     </div>
   );

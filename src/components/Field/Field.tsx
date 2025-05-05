@@ -1,18 +1,8 @@
-import { useEffect } from "react";
-
 type FieldProps = {
-  fields: string[];
-  currentPlayer: string;
-  setCurrentPlayer: React.Dispatch<React.SetStateAction<string>>;
-  setFields: React.Dispatch<React.SetStateAction<string[]>>;
-  winPatterns: number[][];
-  setIsDraw: React.Dispatch<React.SetStateAction<boolean>>;
-  setIsGameEnded: React.Dispatch<React.SetStateAction<boolean>>;
-};
-type FieldLayoutProps = {
   fields: string[];
   showMark: (e: React.MouseEvent<HTMLButtonElement>, index: number) => void;
 };
+type FieldLayoutProps = FieldProps & {};
 
 const FieldLayout: React.FC<FieldLayoutProps> = ({ fields, showMark }) => {
   return (
@@ -33,44 +23,7 @@ const FieldLayout: React.FC<FieldLayoutProps> = ({ fields, showMark }) => {
   );
 };
 
-const Field: React.FC<FieldProps> = ({
-  fields,
-  currentPlayer,
-  setCurrentPlayer,
-  setFields,
-  winPatterns,
-  setIsDraw,
-  setIsGameEnded,
-}) => {
-  const showMark = (e: React.MouseEvent<HTMLButtonElement>, index: number) => {
-    e.currentTarget.innerText = currentPlayer;
-    setFields((prevFields) => {
-      prevFields[index] = currentPlayer;
-      return [...prevFields];
-    });
-    if (currentPlayer === "X") {
-      setCurrentPlayer("O");
-    } else {
-      setCurrentPlayer("X");
-    }
-    e.currentTarget.disabled = true;
-    e.currentTarget.classList.remove("hover:bg-gray-200");
-    e.currentTarget.classList.remove("active:scale-105");
-  };
-  useEffect(() => {
-    if (fields.length > 0) {
-      winPatterns.forEach((pattern) => {
-        const [a, b, c] = pattern;
-        if (fields[a] && fields[a] === fields[b] && fields[a] === fields[c]) {
-          setCurrentPlayer(fields[a]);
-          setIsGameEnded(true);
-        } else if (!fields.includes("")) {
-          setIsDraw(true);
-        }
-      });
-    }
-  }, [fields]);
-
+const Field: React.FC<FieldProps> = ({ fields, showMark }) => {
   return <FieldLayout fields={fields} showMark={showMark} />;
 };
 export default Field;
