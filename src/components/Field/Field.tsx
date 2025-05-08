@@ -1,6 +1,6 @@
 type FieldProps = {
   fields: string[];
-  showMark: (e: React.MouseEvent<HTMLButtonElement>, index: number) => void;
+  showMark: (index: number) => void;
 };
 type FieldLayoutProps = FieldProps & {};
 
@@ -13,7 +13,7 @@ const FieldLayout: React.FC<FieldLayoutProps> = ({ fields, showMark }) => {
             disabled={item !== ""}
             key={index}
             className="border-2 hover:bg-gray-200 transition ease-in-out cursor-pointer active:scale-105"
-            onClick={(e) => showMark(e, index)}
+            onClick={() => showMark(index)}
           >
             {item}
           </button>

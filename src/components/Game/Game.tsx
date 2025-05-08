@@ -5,7 +5,7 @@ export type GameLayoutProps = {
   fields: string[];
   isDraw: boolean;
   isGameEnded: boolean;
-  showMark: (e: React.MouseEvent<HTMLButtonElement>, index: number) => void;
+  showMark: (index: number) => void;
   resetGame: () => void;
   gameStatus: string;
 };
@@ -56,8 +56,7 @@ const Game = () => {
     [0, 4, 8],
     [2, 4, 6], // Варианты побед по диагонали
   ];
-  const showMark = (e: React.MouseEvent<HTMLButtonElement>, index: number) => {
-    e.currentTarget.innerText = currentPlayer;
+  const showMark = (index: number) => {
     setFields((prevFields) => {
       prevFields[index] = currentPlayer;
       return [...prevFields];
@@ -67,9 +66,7 @@ const Game = () => {
     } else {
       setCurrentPlayer("X");
     }
-    e.currentTarget.disabled = true;
-    e.currentTarget.classList.remove("hover:bg-gray-200");
-    e.currentTarget.classList.remove("active:scale-105");
+   
   };
   useEffect(() => {
     if (fields.length > 0) {
@@ -82,6 +79,7 @@ const Game = () => {
           setIsDraw(true);
         }
       });
+      
     }
   }, [fields]);
 
