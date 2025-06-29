@@ -1,6 +1,7 @@
 import Field from "../Field/Field";
 import Information from "../Information/Information";
 import { useState, useEffect } from "react";
+import { store } from "../../store/store";
 export type GameLayoutProps = {
   fields: string[];
   isDraw: boolean;
@@ -32,78 +33,36 @@ const GameLayout: React.FC<GameLayoutProps> = ({
   );
 };
 const Game = () => {
-  const [currentPlayer, setCurrentPlayer] = useState("X");
-  const [isGameEnded, setIsGameEnded] = useState(false);
-  const [isDraw, setIsDraw] = useState(false);
-  const [fields, setFields] = useState<string[]>([
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-  ]);
-  const WIN_PATTERNS = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8], // Варианты побед по горизонтали
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8], // Варианты побед по вертикали
-    [0, 4, 8],
-    [2, 4, 6], // Варианты побед по диагонали
-  ];
-  const showMark = (index: number) => {
-    setFields((prevFields) => {
-      prevFields[index] = currentPlayer;
-      return [...prevFields];
-    });
-    if (currentPlayer === "X") {
-      setCurrentPlayer("O");
-    } else {
-      setCurrentPlayer("X");
-    }
-   
-  };
+  const [_, setRerender] = useState(0);
+
   useEffect(() => {
-    if (fields.length > 0) {
-      WIN_PATTERNS.forEach((pattern) => {
-        const [a, b, c] = pattern;
-        if (fields[a] && fields[a] === fields[b] && fields[a] === fields[c]) {
-          setCurrentPlayer(fields[a]);
-          setIsGameEnded(true);
-        } else if (!fields.includes("")) {
-          setIsDraw(true);
-        }
-      });
-      
-    }
-  }, [fields]);
-
-  let gameStatus = "";
-  if (isDraw) {
-    gameStatus = "Ничья!";
-  } else if (isGameEnded && !isDraw) {
-    gameStatus = `Победа: ${currentPlayer}`;
-  } else if (!isDraw && !isGameEnded) {
-    gameStatus = `Ходит: ${currentPlayer}`;
-  }
-
-  const resetGame = () => {
-    setIsDraw(false);
-    setIsGameEnded(false);
-    setCurrentPlayer("X");
-    setFields(["", "", "", "", "", "", "", "", ""]);
+    const unsubscribe = store.subscribe(() => {
+      setRerender((v) => v + 1);
+    });
+    return unsubscribe;
+  }, []);
+  const state = store.getState();
+  const showMark = (index: number) => {
+    if (state.fields[index] || state.isGameEnded) return;
+    store.dispatch({ type: "MAKE_MOVE", payload: { index } });
   };
+  const resetGame = () => {
+    store.dispatch({ type: "RESET_GAME" });
+  };
+  let gameStatus = "";
+  if (state.isDraw) {
+    gameStatus = "Ничья!";
+  } else if (state.isGameEnded && !state.isDraw) {
+    gameStatus = `Победа: ${state.currentPlayer === "X" ? "O" : "X"}`;
+  } else {
+    gameStatus = `Ходит: ${state.currentPlayer}`;
+  }
   return (
     <div>
       <GameLayout
-        fields={fields}
-        isGameEnded={isGameEnded}
-        isDraw={isDraw}
+        fields={state.fields}
+        isGameEnded={state.isGameEnded}
+        isDraw={state.isDraw}
         showMark={showMark}
         resetGame={resetGame}
         gameStatus={gameStatus}
