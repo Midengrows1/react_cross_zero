@@ -1,7 +1,7 @@
 import Field from "../Field/Field";
 import Information from "../Information/Information";
-import { useState, useEffect } from "react";
-import { store } from "../../store/store";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import { makeMoveActionCreator, resetGameActionCreator } from "../../store/gameReducer";
 export type GameLayoutProps = {
   fields: string[];
   isDraw: boolean;
@@ -33,36 +33,33 @@ const GameLayout: React.FC<GameLayoutProps> = ({
   );
 };
 const Game = () => {
-  const [_, setRerender] = useState(0);
+  const fields = useAppSelector(state => state.fields);
+  const isDraw = useAppSelector(state => state.isDraw);
+  const isGameEnded = useAppSelector(state => state.isGameEnded);
+  const currentPlayer = useAppSelector(state => state.currentPlayer);
+  const dispatch = useAppDispatch();
 
-  useEffect(() => {
-    const unsubscribe = store.subscribe(() => {
-      setRerender((v) => v + 1);
-    });
-    return unsubscribe;
-  }, []);
-  const state = store.getState();
   const showMark = (index: number) => {
-    if (state.fields[index] || state.isGameEnded) return;
-    store.dispatch({ type: "MAKE_MOVE", payload: { index } });
+    if (fields[index] || isGameEnded) return;
+    dispatch(makeMoveActionCreator(index));
   };
   const resetGame = () => {
-    store.dispatch({ type: "RESET_GAME" });
+    dispatch(resetGameActionCreator());
   };
   let gameStatus = "";
-  if (state.isDraw) {
+  if (isDraw) {
     gameStatus = "Ничья!";
-  } else if (state.isGameEnded && !state.isDraw) {
-    gameStatus = `Победа: ${state.currentPlayer === "X" ? "O" : "X"}`;
+  } else if (isGameEnded && !isDraw) {
+    gameStatus = `Победа: ${currentPlayer === "X" ? "O" : "X"}`;
   } else {
-    gameStatus = `Ходит: ${state.currentPlayer}`;
+    gameStatus = `Ходит: ${currentPlayer}`;
   }
   return (
     <div>
       <GameLayout
-        fields={state.fields}
-        isGameEnded={state.isGameEnded}
-        isDraw={state.isDraw}
+        fields={fields}
+        isGameEnded={isGameEnded}
+        isDraw={isDraw}
         showMark={showMark}
         resetGame={resetGame}
         gameStatus={gameStatus}
