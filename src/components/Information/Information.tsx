@@ -1,17 +1,16 @@
-type InformationProps = {
+import { resetGameActionCreator } from "../../store/gameReducer";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
+type InformationLayoutProps = {
   isDraw: boolean;
   isGameEnded: boolean;
   resetGame: () => void;
   gameStatus: string;
 };
-type InformationLayoutProps = InformationProps & {
-  gameStatus: string;
-};
 const InformationLayout: React.FC<InformationLayoutProps> = ({
-  gameStatus,
-  isGameEnded,
-  isDraw,
   resetGame,
+  isDraw,
+  isGameEnded,
+  gameStatus,
 }) => {
   return (
     <div className="flex flex-col gap-4">
@@ -28,12 +27,22 @@ const InformationLayout: React.FC<InformationLayoutProps> = ({
   );
 };
 
-const Information: React.FC<InformationProps> = ({
-  isDraw,
-  isGameEnded,
-  resetGame,
-  gameStatus,
-}) => {
+const Information: React.FC = () => {
+  const isDraw = useAppSelector(state => state.isDraw);
+  const isGameEnded = useAppSelector(state => state.isGameEnded);
+  const currentPlayer = useAppSelector(state => state.currentPlayer);
+  const dispatch = useAppDispatch();
+  let gameStatus = "";
+  if (isDraw) {
+    gameStatus = "Ничья!";
+  } else if (isGameEnded && !isDraw) {
+    gameStatus = `Победа: ${currentPlayer === "X" ? "O" : "X"}`;
+  } else {
+    gameStatus = `Ходит: ${currentPlayer}`;
+  }
+  const resetGame = () => {
+    dispatch(resetGameActionCreator());
+  };
   return (
     <InformationLayout
       isDraw={isDraw}
